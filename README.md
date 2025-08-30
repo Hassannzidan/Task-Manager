@@ -2,6 +2,11 @@
 
 A modern, feature-rich task management application built with React Native and Expo.
 
+## 📸 Application Preview
+<p align="center">
+  <img src="assets/images/application-preview.png" alt="Task Manager App Preview" width="300" />
+</p>
+
 ## ✨ Features
 
 ### 🎯 Core Functionality
