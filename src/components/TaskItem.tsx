@@ -1,5 +1,5 @@
-import { Ionicons } from '@expo/vector-icons';
-import React, { useEffect, useRef } from 'react';
+import { Ionicons } from "@expo/vector-icons";
+import React, { useEffect, useRef } from "react";
 import {
   Animated,
   Dimensions,
@@ -8,8 +8,8 @@ import {
   Text,
   TouchableOpacity,
   View,
-} from 'react-native';
-import { Task } from '../types/Task';
+} from "react-native";
+import { Task } from "../types/Task";
 
 interface TaskItemProps {
   task: Task;
@@ -20,19 +20,19 @@ interface TaskItemProps {
   isSelectionMode: boolean;
 }
 
-const { width } = Dimensions.get('window');
+const { width } = Dimensions.get("window");
 
 /**
  * Enhanced task item component with selection support and modern styling
  * Supports long press for selection mode and displays task description
  */
-const TaskItem = ({ 
-  task, 
-  onToggle, 
-  onDelete, 
-  onSelect, 
-  index, 
-  isSelectionMode 
+const TaskItem = ({
+  task,
+  onToggle,
+  onDelete,
+  onSelect,
+  index,
+  isSelectionMode,
 }: TaskItemProps) => {
   const slideAnim = useRef(new Animated.Value(width)).current;
   const opacityAnim = useRef(new Animated.Value(0)).current;
@@ -107,10 +107,7 @@ const TaskItem = ({
       style={[
         styles.container,
         {
-          transform: [
-            { translateX: slideAnim },
-            { scale: scaleAnim },
-          ],
+          transform: [{ translateX: slideAnim }, { scale: scaleAnim }],
           opacity: opacityAnim,
         },
       ]}
@@ -134,6 +131,10 @@ const TaskItem = ({
         onPress={handleToggle}
         onLongPress={handleLongPress}
         delayLongPress={500}
+        accessible={true}
+        accessibilityRole="checkbox"
+        accessibilityLabel={`Task: ${task.text}`}
+        accessibilityState={{ checked: task.completed || isSelected }}
       >
         {isSelectionMode ? (
           <Animated.View
@@ -146,11 +147,7 @@ const TaskItem = ({
             ]}
           >
             {isSelected && (
-              <Ionicons
-                name="checkmark"
-                size={16}
-                color="#ffffff"
-              />
+              <Ionicons name="checkmark" size={16} color="#ffffff" />
             )}
           </Animated.View>
         ) : (
@@ -159,13 +156,13 @@ const TaskItem = ({
               styles.checkbox,
               task.completed && styles.checkboxCompleted,
             ]}
+            accessible={true}
+            accessibilityLabel={`${task.text}${
+              task.description ? ". " + task.description : ""
+            }`}
           >
             {task.completed && (
-              <Ionicons
-                name="checkmark"
-                size={16}
-                color="#ffffff"
-              />
+              <Ionicons name="checkmark" size={16} color="#ffffff" />
             )}
           </View>
         )}
@@ -174,15 +171,12 @@ const TaskItem = ({
       {/* Task Content */}
       <View style={styles.textContainer}>
         <Text
-          style={[
-            styles.taskText,
-            task.completed && styles.taskTextCompleted,
-          ]}
+          style={[styles.taskText, task.completed && styles.taskTextCompleted]}
           numberOfLines={2}
         >
           {task.text}
         </Text>
-        
+
         {task.description && (
           <Text
             style={[
@@ -201,12 +195,10 @@ const TaskItem = ({
         style={styles.deleteButton}
         onPress={handleDelete}
         activeOpacity={0.7}
+        accessibilityRole="button"
+        accessibilityLabel={`Delete task: ${task.text}`}
       >
-        <Ionicons
-          name="trash-outline"
-          size={20}
-          color="#ef4444"
-        />
+        <Ionicons name="trash-outline" size={20} color="#ef4444" />
       </TouchableOpacity>
     </Animated.View>
   );
@@ -216,13 +208,13 @@ export default TaskItem;
 
 const styles = StyleSheet.create({
   container: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    backgroundColor: '#ffffff',
+    flexDirection: "row",
+    alignItems: "flex-start",
+    backgroundColor: "#ffffff",
     paddingVertical: 16,
     paddingHorizontal: 20,
     borderRadius: 16,
-    shadowColor: '#000000',
+    shadowColor: "#000000",
     shadowOffset: {
       width: 0,
       height: 2,
@@ -231,19 +223,19 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 3,
     borderWidth: 1,
-    borderColor: '#f1f5f9',
-    position: 'relative',
+    borderColor: "#f1f5f9",
+    position: "relative",
   },
   selectionModeIndicator: {
-    position: 'absolute',
+    position: "absolute",
     top: 0,
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(139, 92, 246, 0.05)',
+    backgroundColor: "rgba(139, 92, 246, 0.05)",
     borderRadius: 16,
     borderWidth: 2,
-    borderColor: 'rgba(139, 92, 246, 0.2)',
+    borderColor: "rgba(139, 92, 246, 0.2)",
   },
   toggleButton: {
     marginRight: 16,
@@ -254,28 +246,28 @@ const styles = StyleSheet.create({
     height: 24,
     borderRadius: 12,
     borderWidth: 2,
-    borderColor: '#d1d5db',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'transparent',
+    borderColor: "#d1d5db",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "transparent",
   },
   checkboxCompleted: {
-    backgroundColor: '#10b981',
-    borderColor: '#10b981',
+    backgroundColor: "#10b981",
+    borderColor: "#10b981",
   },
   selectionCheckbox: {
     width: 24,
     height: 24,
     borderRadius: 6,
     borderWidth: 2,
-    borderColor: '#d1d5db',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'transparent',
+    borderColor: "#d1d5db",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "transparent",
   },
   selectionCheckboxSelected: {
-    backgroundColor: '#8b5cf6',
-    borderColor: '#8b5cf6',
+    backgroundColor: "#8b5cf6",
+    borderColor: "#8b5cf6",
   },
   textContainer: {
     flex: 1,
@@ -283,22 +275,22 @@ const styles = StyleSheet.create({
   },
   taskText: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#1e293b',
+    fontWeight: "600",
+    color: "#1e293b",
     lineHeight: 22,
     marginBottom: 4,
   },
   taskTextCompleted: {
-    textDecorationLine: 'line-through',
-    color: '#9ca3af',
+    textDecorationLine: "line-through",
+    color: "#9ca3af",
   },
   taskDescription: {
     fontSize: 14,
-    color: '#64748b',
+    color: "#64748b",
     lineHeight: 18,
   },
   taskDescriptionCompleted: {
-    color: '#cbd5e1',
+    color: "#cbd5e1",
   },
   deleteButton: {
     padding: 8,

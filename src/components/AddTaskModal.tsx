@@ -2,16 +2,16 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { useEffect, useRef, useState } from 'react';
 import {
-    Animated,
-    Dimensions,
-    KeyboardAvoidingView,
-    Modal,
-    Platform,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  Animated,
+  Dimensions,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -99,6 +99,7 @@ export default function AddTaskModal({
       transparent
       animationType="none"
       onRequestClose={handleClose}
+      accessibilityViewIsModal={true}
     >
       <KeyboardAvoidingView
         style={styles.container}
@@ -115,6 +116,8 @@ export default function AddTaskModal({
             style={styles.backdropTouchable}
             onPress={handleClose}
             activeOpacity={1}
+            accessibilityRole="button"
+            accessibilityLabel="Close Add Task Modal"
           />
         </Animated.View>
 
@@ -135,6 +138,9 @@ export default function AddTaskModal({
                 style={styles.closeButton}
                 onPress={handleClose}
                 activeOpacity={0.7}
+                accessibilityRole="button"
+                accessibilityLabel="Add Task Button"
+                accessibilityState={{ disabled: !isFormValid }}
               >
                 <Ionicons name="close" size={24} color="#64748b" />
               </TouchableOpacity>
@@ -157,6 +163,7 @@ export default function AddTaskModal({
                   onFocus={() => setIsTitleFocused(true)}
                   onBlur={() => setIsTitleFocused(false)}
                   returnKeyType="next"
+                  accessibilityLabel="Task Title Input"
                 />
               </View>
 

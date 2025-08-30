@@ -104,11 +104,17 @@ export default function FloatingIcons() {
                 ],
               },
             ]}
+            accessible={false}
+            accessibilityElementsHidden={true}
+            importantForAccessibility="no-hide-descendants"
           >
             <Ionicons
               name={icon.icon}
               size={icon.size}
               color={icon.color}
+              accessible={false}
+              accessibilityElementsHidden={true}
+              importantForAccessibility="no"
             />
           </Animated.View>
         );

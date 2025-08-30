@@ -10,6 +10,8 @@ export default function TaskIllustration() {
           name="checkmark-circle"
           size={80}
           color="#3b82f6"
+          accessibilityRole="image"
+          accessibilityLabel="Completed tasks illustration"
         />
       </View>
       <View style={styles.taskList}>

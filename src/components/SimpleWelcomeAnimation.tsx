@@ -65,6 +65,8 @@ export default function SimpleWelcomeAnimation() {
             opacity: opacityAnim,
           },
         ]}
+        accessible={false}
+        importantForAccessibility="no"
       >
         {/* Simple geometric shapes for animation */}
         <View style={styles.shape1} />

@@ -1,11 +1,11 @@
 import React, { useRef } from 'react';
 import {
-    Animated,
-    StyleSheet,
-    Text,
-    TextStyle,
-    TouchableOpacity,
-    ViewStyle,
+  Animated,
+  StyleSheet,
+  Text,
+  TextStyle,
+  TouchableOpacity,
+  ViewStyle,
 } from 'react-native';
 
 interface CustomButtonProps {
@@ -46,6 +46,9 @@ export default function CustomButton({
       onPressOut={handlePressOut}
       disabled={disabled}
       activeOpacity={0.8}
+      accessibilityRole="button"
+      accessibilityLabel={title}
+      accessibilityState={{ disabled }}
     >
       <Animated.View
         style={[

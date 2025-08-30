@@ -1,13 +1,13 @@
-import { Ionicons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
-import React, { useEffect, useRef } from 'react';
+import { Ionicons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
+import React, { useEffect, useRef } from "react";
 import {
   Animated,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
-} from 'react-native';
+} from "react-native";
 
 interface BulkActionBarProps {
   visible: boolean;
@@ -79,22 +79,24 @@ export default function BulkActionBar({
     >
       {/* Background with gradient */}
       <LinearGradient
-        colors={['rgba(255, 255, 255, 0.95)', 'rgba(255, 255, 255, 0.98)']}
+        colors={["rgba(255, 255, 255, 0.95)", "rgba(255, 255, 255, 0.98)"]}
         style={styles.background}
       />
-      
+
       {/* Selection Info */}
       <View style={styles.selectionInfo}>
         <View style={styles.selectionBadge}>
           <Ionicons name="checkmark-circle" size={20} color="#8b5cf6" />
           <Text style={styles.selectionText}>
-            {selectedCount} task{selectedCount !== 1 ? 's' : ''} selected
+            {selectedCount} task{selectedCount !== 1 ? "s" : ""} selected
           </Text>
         </View>
         <TouchableOpacity
           style={styles.clearButton}
           onPress={onClearSelection}
           activeOpacity={0.7}
+          accessibilityRole="button"
+          accessibilityLabel="Clear Selection"
         >
           <Ionicons name="close-circle" size={24} color="#64748b" />
         </TouchableOpacity>
@@ -107,9 +109,11 @@ export default function BulkActionBar({
           style={styles.actionButton}
           onPress={onMarkAllCompleted}
           activeOpacity={0.8}
+          accessibilityRole="button"
+          accessibilityLabel="Mark All as Completed"
         >
           <LinearGradient
-            colors={['#10b981', '#059669']}
+            colors={["#10b981", "#059669"]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
             style={styles.gradient}
@@ -124,15 +128,23 @@ export default function BulkActionBar({
           style={styles.actionButton}
           onPress={onDeleteAll}
           activeOpacity={0.8}
+          accessibilityRole="button"
+          accessibilityLabel="Delete All Selected Tasks"
         >
           <LinearGradient
-            colors={['#ef4444', '#dc2626']}
+            colors={["#ef4444", "#dc2626"]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
             style={styles.gradient}
           >
             <Ionicons name="trash" size={20} color="#ffffff" />
-            <Text style={styles.actionButtonText}>Delete All</Text>
+            <Text
+              style={styles.actionButtonText}
+              accessibilityRole="text"
+              accessibilityLiveRegion="polite"
+            >
+              Delete All
+            </Text>
           </LinearGradient>
         </TouchableOpacity>
       </View>
@@ -142,7 +154,7 @@ export default function BulkActionBar({
 
 const styles = StyleSheet.create({
   container: {
-    position: 'absolute',
+    position: "absolute",
     bottom: 0,
     left: 0,
     right: 0,
@@ -151,7 +163,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingTop: 20,
     paddingBottom: 34,
-    shadowColor: '#000000',
+    shadowColor: "#000000",
     shadowOffset: {
       width: 0,
       height: -8,
@@ -159,10 +171,10 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.15,
     shadowRadius: 20,
     elevation: 12,
-    overflow: 'hidden',
+    overflow: "hidden",
   },
   background: {
-    position: 'absolute',
+    position: "absolute",
     top: 0,
     left: 0,
     right: 0,
@@ -171,15 +183,15 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 24,
   },
   selectionInfo: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: 20,
   },
   selectionBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(139, 92, 246, 0.1)',
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "rgba(139, 92, 246, 0.1)",
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
@@ -187,23 +199,23 @@ const styles = StyleSheet.create({
   },
   selectionText: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#1e293b',
+    fontWeight: "600",
+    color: "#1e293b",
   },
   clearButton: {
     padding: 8,
-    backgroundColor: 'rgba(100, 116, 139, 0.1)',
+    backgroundColor: "rgba(100, 116, 139, 0.1)",
     borderRadius: 20,
   },
   actionButtons: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 12,
   },
   actionButton: {
     flex: 1,
     borderRadius: 16,
-    overflow: 'hidden',
-    shadowColor: '#000000',
+    overflow: "hidden",
+    shadowColor: "#000000",
     shadowOffset: {
       width: 0,
       height: 4,
@@ -213,15 +225,15 @@ const styles = StyleSheet.create({
     elevation: 6,
   },
   gradient: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     paddingVertical: 18,
     gap: 8,
   },
   actionButtonText: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#ffffff',
+    fontWeight: "600",
+    color: "#ffffff",
   },
 });

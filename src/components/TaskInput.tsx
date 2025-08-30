@@ -77,6 +77,8 @@ export default function TaskInput({
           onBlur={handleBlur}
           returnKeyType="done"
           onSubmitEditing={handleAddTask}
+          accessible={true}
+          accessibilityLabel="Task input field"
         />
         <TouchableOpacity
           style={[
@@ -86,6 +88,9 @@ export default function TaskInput({
           onPress={handleAddTask}
           disabled={!value.trim()}
           activeOpacity={0.7}
+          accessible={true}
+          accessibilityRole="button"
+          accessibilityLabel="Add task"
         >
           <Ionicons
             name="add"

@@ -40,6 +40,9 @@ export default function FloatingActionButton({
         onPress={onPress}
         disabled={disabled}
         activeOpacity={0.8}
+        accessible={true}
+        accessibilityRole="button"
+        accessibilityLabel="Add task"
       >
         <LinearGradient
           colors={['#8B5CF6', '#A855F7', '#C084FC']}
@@ -58,6 +61,8 @@ export default function FloatingActionButton({
             name={icon}
             size={size * 0.4}
             color="#ffffff"
+            accessibilityElementsHidden={true}
+            importantForAccessibility="no"
           />
         </LinearGradient>
       </TouchableOpacity>

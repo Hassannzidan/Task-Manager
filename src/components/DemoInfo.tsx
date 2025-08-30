@@ -1,16 +1,30 @@
-import React from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
-import { BorderRadius, Colors, Shadows, Spacing, Typography } from '../styles/global';
+import React from "react";
+import { ScrollView, StyleSheet, Text, View } from "react-native";
+import {
+  BorderRadius,
+  Colors,
+  Shadows,
+  Spacing,
+  Typography,
+} from "../styles/global";
 
 export default function DemoInfo() {
   return (
-    <ScrollView style={styles.container}>
-      <Text style={styles.title}>Task Manager App Demo</Text>
-      
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Features</Text>
+    <ScrollView
+      style={styles.container}
+      accessible
+      accessibilityLabel="Demo information about the Task Manager app"
+    >
+      <Text style={styles.title} accessibilityRole="header">
+        Task Manager App Demo
+      </Text>
+
+      <View style={styles.section} accessibilityRole="list">
+        <Text style={styles.sectionTitle} accessibilityRole="header">Features</Text>
         <Text style={styles.feature}>✓ Welcome screen with animations</Text>
-        <Text style={styles.feature}>✓ Task management (add, complete, delete)</Text>
+        <Text style={styles.feature} >
+          ✓ Task management (add, complete, delete)
+        </Text>
         <Text style={styles.feature}>✓ Smooth animations and transitions</Text>
         <Text style={styles.feature}>✓ Modern, responsive UI design</Text>
         <Text style={styles.feature}>✓ TypeScript for type safety</Text>
@@ -20,24 +34,26 @@ export default function DemoInfo() {
         <Text style={styles.sectionTitle}>Project Structure</Text>
         <Text style={styles.structure}>src/</Text>
         <Text style={styles.structure}>├── components/</Text>
-        <Text style={styles.structure}>│   ├── CustomButton.tsx</Text>
-        <Text style={styles.structure}>│   ├── TaskInput.tsx</Text>
-        <Text style={styles.structure}>│   ├── TaskItem.tsx</Text>
-        <Text style={styles.structure}>│   └── TaskIllustration.tsx</Text>
+        <Text style={styles.structure}>│ ├── CustomButton.tsx</Text>
+        <Text style={styles.structure}>│ ├── TaskInput.tsx</Text>
+        <Text style={styles.structure}>│ ├── TaskItem.tsx</Text>
+        <Text style={styles.structure}>│ └── TaskIllustration.tsx</Text>
         <Text style={styles.structure}>├── screens/</Text>
-        <Text style={styles.structure}>│   ├── WelcomeScreen.tsx</Text>
-        <Text style={styles.structure}>│   └── TaskManagerScreen.tsx</Text>
+        <Text style={styles.structure}>│ ├── WelcomeScreen.tsx</Text>
+        <Text style={styles.structure}>│ └── TaskManagerScreen.tsx</Text>
         <Text style={styles.structure}>├── types/</Text>
-        <Text style={styles.structure}>│   └── Task.ts</Text>
+        <Text style={styles.structure}>│ └── Task.ts</Text>
         <Text style={styles.structure}>└── styles/</Text>
-        <Text style={styles.structure}>    └── global.ts</Text>
+        <Text style={styles.structure}> └── global.ts</Text>
       </View>
 
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>How to Run</Text>
         <Text style={styles.instruction}>1. npm install</Text>
         <Text style={styles.instruction}>2. npm start</Text>
-        <Text style={styles.instruction}>3. Press &apos;i&apos; for iOS or &apos;a&apos; for Android</Text>
+        <Text style={styles.instruction}>
+          3. Press &apos;i&apos; for iOS or &apos;a&apos; for Android
+        </Text>
       </View>
     </ScrollView>
   );
@@ -52,7 +68,7 @@ const styles = StyleSheet.create({
   title: {
     ...Typography.h1,
     color: Colors.textPrimary,
-    textAlign: 'center',
+    textAlign: "center",
     marginBottom: Spacing.xl,
   },
   section: {
@@ -75,7 +91,7 @@ const styles = StyleSheet.create({
   structure: {
     ...Typography.caption,
     color: Colors.textSecondary,
-    fontFamily: 'monospace',
+    fontFamily: "monospace",
     marginBottom: Spacing.xs,
   },
   instruction: {
