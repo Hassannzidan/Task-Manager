@@ -1,11 +1,12 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Animated,
-  FlatList,
   KeyboardAvoidingView,
   Platform,
+  SectionList,
   StyleSheet,
   Text,
+  TouchableOpacity,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -36,6 +37,8 @@ export default function TaskManagerScreen() {
     clearSelection,
     markAllSelectedCompleted,
     deleteAllSelected,
+    toggleSelectionMode,
+    selectAllTasks,
   } = useTasks();
 
   const { toast, showToast, hideToast } = useToast(2500);
@@ -63,13 +66,36 @@ export default function TaskManagerScreen() {
     };
   }, [fadeAnim]);
 
+  // Memoized section data for SectionList
+  const sectionData = useMemo(() => {
+    const sections = [];
+    
+    if (incompleteTasks.length > 0) {
+      sections.push({
+        title: 'Incomplete Tasks',
+        data: incompleteTasks,
+        type: 'incomplete' as const,
+      });
+    }
+    
+    if (completedTasks.length > 0) {
+      sections.push({
+        title: 'Completed Tasks',
+        data: completedTasks,
+        type: 'completed' as const,
+      });
+    }
+    
+    return sections;
+  }, [incompleteTasks, completedTasks]);
+
   // Enhanced task handlers with toast notifications
-  const handleAddTask = (title: string, description: string) => {
+  const handleAddTask = useCallback((title: string, description: string) => {
     addTask(title, description);
     showToast('Task added successfully 🚀', 'success');
-  };
+  }, [addTask, showToast]);
 
-  const handleToggleTask = async (taskId: string) => {
+  const handleToggleTask = useCallback(async (taskId: string) => {
     const task = tasks.find(t => t.id === taskId);
     if (task && !task.completed) {
       await toggleTask(taskId);
@@ -77,37 +103,37 @@ export default function TaskManagerScreen() {
     } else {
       toggleTask(taskId);
     }
-  };
+  }, [tasks, toggleTask, showToast]);
 
-  const handleDeleteTask = (taskId: string) => {
+  const handleDeleteTask = useCallback((taskId: string) => {
     deleteTask(taskId);
     showToast('Task removed 🗑️', 'deletion');
-  };
+  }, [deleteTask, showToast]);
 
-  const handleMarkAllSelectedCompleted = async () => {
+  const handleMarkAllSelectedCompleted = useCallback(async () => {
     const selectedTaskIds = Array.from(selectedTasks);
     await markAllSelectedCompleted();
     showToast(`Marked ${selectedTaskIds.length} task${selectedTaskIds.length !== 1 ? 's' : ''} as completed 🎉`, 'completion');
-  };
+  }, [selectedTasks, markAllSelectedCompleted, showToast]);
 
-  const handleDeleteAllSelected = () => {
+  const handleDeleteAllSelected = useCallback(() => {
     const selectedTaskIds = Array.from(selectedTasks);
     deleteAllSelected();
     showToast(`Removed ${selectedTaskIds.length} task${selectedTaskIds.length !== 1 ? 's' : ''} 🗑️`, 'deletion');
-  };
+  }, [selectedTasks, deleteAllSelected, showToast]);
 
   // Confirmation handlers
-  const handleConfirmDelete = () => {
+  const handleConfirmDelete = useCallback(() => {
     if (confirmationState.mode === 'delete-single' && confirmationState.targetTaskId) {
       handleDeleteTask(confirmationState.targetTaskId);
     } else if (confirmationState.mode === 'delete-bulk') {
       handleDeleteAllSelected();
     }
     hideConfirmation();
-  };
+  }, [confirmationState, handleDeleteTask, handleDeleteAllSelected, hideConfirmation]);
 
-  // Render task item with proper props
-  const renderTaskItem = ({ item, index }: { item: any; index: number }) => (
+  // Memoized render task item function
+  const renderTaskItem = useCallback(({ item, index }: { item: any; index: number }) => (
     <TaskItem
       task={item}
       onToggle={handleToggleTask}
@@ -116,7 +142,35 @@ export default function TaskManagerScreen() {
       index={index}
       isSelectionMode={isSelectionMode}
     />
-  );
+  ), [handleToggleTask, showDeleteConfirmation, handleTaskSelection, isSelectionMode]);
+
+  // Memoized render section header function
+  const renderSectionHeader = useCallback(({ section }: { section: { title: string } }) => (
+    <View style={styles.sectionHeader}>
+      <Text style={styles.sectionTitle}>{section.title}</Text>
+    </View>
+  ), []);
+
+  // Memoized render separator function
+  const renderSeparator = useCallback(() => <View style={styles.separator} />, []);
+
+  // Memoized render empty state function
+  const renderEmptyState = useCallback(() => (
+    <View style={styles.emptyState}>
+      <Text style={styles.emptyStateText}>
+        No tasks yet. Tap the + button to get started!
+      </Text>
+    </View>
+  ), []);
+
+  // Header action handlers
+  const handleSelectModeToggle = useCallback(() => {
+    toggleSelectionMode();
+  }, [toggleSelectionMode]);
+
+  const handleSelectAll = useCallback(() => {
+    selectAllTasks();
+  }, [selectAllTasks]);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -126,7 +180,42 @@ export default function TaskManagerScreen() {
       >
         {/* Header */}
         <Animated.View style={[styles.header, { opacity: fadeAnim }]}>
-          <Text style={styles.title}>Task Manager</Text>
+          <View style={styles.headerTop}>
+            <Text style={styles.title}>Task Manager</Text>
+            {totalTasksCount > 0 && (
+              <TouchableOpacity
+                style={styles.selectButton}
+                onPress={handleSelectModeToggle}
+                activeOpacity={0.7}
+                accessibilityRole="button"
+                accessibilityLabel={isSelectionMode ? "Exit selection mode" : "Enter selection mode"}
+                accessibilityHint="Double tap to toggle selection mode for bulk operations"
+              >
+                <Text style={styles.selectButtonText}>
+                  {isSelectionMode ? 'Cancel' : 'Select'}
+                </Text>
+              </TouchableOpacity>
+            )}
+          </View>
+          
+          {isSelectionMode && (
+            <View style={styles.selectionHeader}>
+              <TouchableOpacity
+                style={styles.selectAllButton}
+                onPress={handleSelectAll}
+                activeOpacity={0.7}
+                accessibilityRole="button"
+                accessibilityLabel="Select all tasks"
+                accessibilityHint="Double tap to select all tasks for bulk operations"
+              >
+                <Text style={styles.selectAllButtonText}>Select All</Text>
+              </TouchableOpacity>
+              <Text style={styles.selectionCount}>
+                {selectedTasks.size} of {totalTasksCount} selected
+              </Text>
+            </View>
+          )}
+          
           <Text style={styles.subtitle}>
             {totalTasksCount === 0
               ? 'No tasks yet'
@@ -136,53 +225,26 @@ export default function TaskManagerScreen() {
 
         {/* Content */}
         <View style={styles.content}>
-          {/* Incomplete Tasks Section */}
-          {incompleteTasks.length > 0 && (
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Incomplete Tasks</Text>
-              <FlatList
-                data={incompleteTasks}
-                keyExtractor={(item) => item.id}
-                renderItem={renderTaskItem}
-                showsVerticalScrollIndicator={false}
-                contentContainerStyle={styles.taskList}
-                ItemSeparatorComponent={() => <View style={styles.separator} />}
-                scrollEventThrottle={16}
-                keyboardShouldPersistTaps="handled"
-                removeClippedSubviews={true}
-                maxToRenderPerBatch={10}
-                windowSize={10}
-              />
-            </View>
-          )}
-
-          {/* Completed Tasks Section */}
-          {completedTasks.length > 0 && (
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Completed Tasks</Text>
-              <FlatList
-                data={completedTasks}
-                keyExtractor={(item) => item.id}
-                renderItem={renderTaskItem}
-                showsVerticalScrollIndicator={false}
-                contentContainerStyle={styles.taskList}
-                ItemSeparatorComponent={() => <View style={styles.separator} />}
-                scrollEventThrottle={16}
-                keyboardShouldPersistTaps="handled"
-                removeClippedSubviews={true}
-                maxToRenderPerBatch={10}
-                windowSize={10}
-              />
-            </View>
-          )}
-
-          {/* Empty State */}
-          {totalTasksCount === 0 && (
-            <View style={styles.emptyState}>
-              <Text style={styles.emptyStateText}>
-                No tasks yet. Tap the + button to get started!
-              </Text>
-            </View>
+          {totalTasksCount === 0 ? (
+            renderEmptyState()
+          ) : (
+            <SectionList
+              sections={sectionData}
+              keyExtractor={(item) => item.id}
+              renderItem={renderTaskItem}
+              renderSectionHeader={renderSectionHeader}
+              ItemSeparatorComponent={renderSeparator}
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={styles.taskList}
+              scrollEventThrottle={16}
+              keyboardShouldPersistTaps="handled"
+              removeClippedSubviews={true}
+              maxToRenderPerBatch={10}
+              windowSize={10}
+              stickySectionHeadersEnabled={false}
+              accessibilityRole="list"
+              accessibilityLabel="Task list with incomplete and completed sections"
+            />
           )}
         </View>
 
@@ -246,11 +308,62 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#e2e8f0',
   },
+  headerTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
   title: {
     fontSize: 32,
     fontWeight: 'bold',
     color: '#1e293b',
-    marginBottom: 8,
+    flex: 1,
+  },
+  selectButton: {
+    backgroundColor: '#8B5CF6',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 20,
+    shadowColor: '#8B5CF6',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  selectButtonText: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  selectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    backgroundColor: 'rgba(139, 92, 246, 0.1)',
+    borderRadius: 12,
+  },
+  selectAllButton: {
+    backgroundColor: '#8B5CF6',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 16,
+  },
+  selectAllButtonText: {
+    color: '#ffffff',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  selectionCount: {
+    fontSize: 14,
+    color: '#64748b',
+    fontWeight: '500',
   },
   subtitle: {
     fontSize: 16,
@@ -260,15 +373,14 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 24,
   },
-  section: {
-    marginBottom: 24,
+  sectionHeader: {
+    marginBottom: 16,
+    marginTop: 8,
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: '600',
     color: '#374151',
-    marginBottom: 16,
-    marginTop: 8,
   },
   taskList: {
     paddingBottom: 100,

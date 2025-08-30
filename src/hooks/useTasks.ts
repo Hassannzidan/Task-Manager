@@ -67,6 +67,28 @@ export const useTasks = () => {
   }, []);
 
   /**
+   * Clear all selections and exit selection mode
+   */
+  const clearSelection = useCallback(() => {
+    setSelectedTasks(new Set());
+    setIsSelectionMode(false);
+    setTasks(prevTasks =>
+      prevTasks.map(task => ({ ...task, selected: false }))
+    );
+  }, []);
+
+  /**
+   * Toggle selection mode on/off
+   */
+  const toggleSelectionMode = useCallback(() => {
+    if (isSelectionMode) {
+      clearSelection();
+    } else {
+      setIsSelectionMode(true);
+    }
+  }, [isSelectionMode, clearSelection]);
+
+  /**
    * Handle task selection for bulk operations
    */
   const handleTaskSelection = useCallback((taskId: string) => {
@@ -101,15 +123,15 @@ export const useTasks = () => {
   }, [isSelectionMode]);
 
   /**
-   * Clear all selections and exit selection mode
+   * Select all tasks
    */
-  const clearSelection = useCallback(() => {
-    setSelectedTasks(new Set());
-    setIsSelectionMode(false);
+  const selectAllTasks = useCallback(() => {
+    const allTaskIds = tasks.map(task => task.id);
+    setSelectedTasks(new Set(allTaskIds));
     setTasks(prevTasks =>
-      prevTasks.map(task => ({ ...task, selected: false }))
+      prevTasks.map(task => ({ ...task, selected: true }))
     );
-  }, []);
+  }, [tasks]);
 
   /**
    * Mark all selected tasks as completed
@@ -163,7 +185,9 @@ export const useTasks = () => {
     addTask,
     toggleTask,
     deleteTask,
+    toggleSelectionMode,
     handleTaskSelection,
+    selectAllTasks,
     clearSelection,
     markAllSelectedCompleted,
     deleteAllSelected,
