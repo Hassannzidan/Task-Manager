@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import React, { useEffect, useRef } from 'react';
+import React, { forwardRef, useEffect, useImperativeHandle, useRef } from 'react';
 import {
   Animated,
   Dimensions,
@@ -20,24 +20,47 @@ interface TaskItemProps {
   isSelectionMode: boolean;
 }
 
+export interface TaskItemRef {
+  animateDelete: () => void;
+}
+
 const { width } = Dimensions.get('window');
 
 /**
  * Enhanced task item component with selection support and modern styling
  * Supports long press for selection mode and displays task description
  */
-export default function TaskItem({ 
+const TaskItem = forwardRef<TaskItemRef, TaskItemProps>(({ 
   task, 
   onToggle, 
   onDelete, 
   onSelect, 
   index, 
   isSelectionMode 
-}: TaskItemProps) {
+}, ref) => {
   const slideAnim = useRef(new Animated.Value(width)).current;
   const opacityAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0.8)).current;
   const checkAnim = useRef(new Animated.Value(0)).current;
+
+  useImperativeHandle(ref, () => ({
+    animateDelete: () => {
+      Animated.parallel([
+        Animated.timing(slideAnim, {
+          toValue: -width,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+        Animated.timing(opacityAnim, {
+          toValue: 0,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+      ]).start(() => {
+        onDelete(task.id);
+      });
+    },
+  }));
 
   useEffect(() => {
     Animated.parallel([
@@ -88,20 +111,8 @@ export default function TaskItem({
   };
 
   const handleDelete = () => {
-    Animated.parallel([
-      Animated.timing(slideAnim, {
-        toValue: -width,
-        duration: 300,
-        useNativeDriver: true,
-      }),
-      Animated.timing(opacityAnim, {
-        toValue: 0,
-        duration: 300,
-        useNativeDriver: true,
-      }),
-    ]).start(() => {
-      onDelete(task.id);
-    });
+    // Show confirmation dialog first
+    onDelete(task.id);
   };
 
   const isSelected = task.selected || false;
@@ -201,7 +212,11 @@ export default function TaskItem({
       </TouchableOpacity>
     </Animated.View>
   );
-}
+});
+
+TaskItem.displayName = 'TaskItem';
+
+export default TaskItem;
 
 const styles = StyleSheet.create({
   container: {

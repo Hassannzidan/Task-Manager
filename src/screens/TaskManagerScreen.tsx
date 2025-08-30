@@ -1,22 +1,21 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
-    Animated,
-    FlatList,
-    KeyboardAvoidingView,
-    Platform,
-    StyleSheet,
-    Text,
-    View,
-    Alert,
+  Animated,
+  FlatList,
+  KeyboardAvoidingView,
+  Platform,
+  StyleSheet,
+  Text,
+  View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import FloatingActionButton from '../components/FloatingActionButton';
 import AddTaskModal from '../components/AddTaskModal';
-import TaskItem from '../components/TaskItem';
-import Toast, { ToastType } from '../components/Toast';
-import ConfirmationDialog from '../components/ConfirmationDialog';
 import BulkActionBar from '../components/BulkActionBar';
+import ConfirmationDialog from '../components/ConfirmationDialog';
+import FloatingActionButton from '../components/FloatingActionButton';
+import TaskItem, { TaskItemRef } from '../components/TaskItem';
+import Toast, { ToastType } from '../components/Toast';
 import { Task } from '../types/Task';
 import soundManager from '../utils/soundUtils';
 
@@ -53,6 +52,9 @@ export default function TaskManagerScreen() {
 
   // Animation refs
   const fadeAnim = useRef(new Animated.Value(0)).current;
+  
+  // Task item refs for animation control
+  const taskItemRefs = useRef<Map<string, TaskItemRef>>(new Map()).current;
 
   // Initialize sound manager and animations
   useEffect(() => {
@@ -235,7 +237,16 @@ export default function TaskManagerScreen() {
     showConfirmation(
       'Delete Task',
       'Are you sure you want to remove this task?',
-      () => deleteTask(taskId)
+      () => {
+        // Trigger the delete animation in the TaskItem
+        const taskItemRef = taskItemRefs.get(taskId);
+        if (taskItemRef) {
+          taskItemRef.animateDelete();
+        } else {
+          // Fallback: delete immediately if ref not found
+          deleteTask(taskId);
+        }
+      }
     );
   };
 
@@ -256,6 +267,11 @@ export default function TaskManagerScreen() {
    */
   const renderTaskItem = ({ item, index }: { item: Task; index: number }) => (
     <TaskItem
+      ref={(ref) => {
+        if (ref) {
+          taskItemRefs.set(item.id, ref);
+        }
+      }}
       task={item}
       onToggle={toggleTask}
       onDelete={showDeleteConfirmation}
@@ -350,8 +366,8 @@ export default function TaskManagerScreen() {
           title={confirmationDialog.title}
           message={confirmationDialog.message}
           onConfirm={() => {
-            confirmationDialog.onConfirm();
             hideConfirmation();
+            confirmationDialog.onConfirm();
           }}
           onCancel={hideConfirmation}
           type="delete"
