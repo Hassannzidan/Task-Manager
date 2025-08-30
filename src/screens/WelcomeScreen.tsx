@@ -14,10 +14,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { RootStackParamList } from '../../App';
 import CustomButton from '../components/CustomButton';
 import FloatingIcons from '../components/FloatingIcons';
-// import SmartWelcomeAnimation from '../components/SmartWelcomeAnimation';
-
-// Import the welcome animation
-const welcomeAnimation = require('../../assets/animations/welcome.json');
 
 type WelcomeScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Welcome'>;
 
@@ -117,19 +113,6 @@ export default function WelcomeScreen() {
           <Text style={styles.subtitle}>
             This productive tool is designed to help you better manage your task project-wise conveniently!
           </Text>
-        </Animated.View>
-
-        {/* Smart Animation with Auto-Fallback */}
-        <Animated.View 
-          style={[
-            styles.characterContainer, 
-            { transform: [{ scale: characterScale }] }
-          ]}
-        >
-          {/* <SmartWelcomeAnimation 
-            lottieSource={welcomeAnimation}
-            fallbackText="Welcome!"
-          /> */}
         </Animated.View>
 
         {/* Button */}
