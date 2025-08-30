@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import React, { forwardRef, useEffect, useImperativeHandle, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import {
   Animated,
   Dimensions,
@@ -20,47 +20,25 @@ interface TaskItemProps {
   isSelectionMode: boolean;
 }
 
-export interface TaskItemRef {
-  animateDelete: () => void;
-}
-
 const { width } = Dimensions.get('window');
 
 /**
  * Enhanced task item component with selection support and modern styling
  * Supports long press for selection mode and displays task description
  */
-const TaskItem = forwardRef<TaskItemRef, TaskItemProps>(({ 
+const TaskItem = ({ 
   task, 
   onToggle, 
   onDelete, 
   onSelect, 
   index, 
   isSelectionMode 
-}, ref) => {
+}: TaskItemProps) => {
   const slideAnim = useRef(new Animated.Value(width)).current;
   const opacityAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0.8)).current;
   const checkAnim = useRef(new Animated.Value(0)).current;
-
-  useImperativeHandle(ref, () => ({
-    animateDelete: () => {
-      Animated.parallel([
-        Animated.timing(slideAnim, {
-          toValue: -width,
-          duration: 300,
-          useNativeDriver: true,
-        }),
-        Animated.timing(opacityAnim, {
-          toValue: 0,
-          duration: 300,
-          useNativeDriver: true,
-        }),
-      ]).start(() => {
-        onDelete(task.id);
-      });
-    },
-  }));
+  const selectionIndicatorAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     Animated.parallel([
@@ -94,7 +72,15 @@ const TaskItem = forwardRef<TaskItemRef, TaskItemProps>(({
       friction: 8,
       useNativeDriver: true,
     }).start();
-  }, [isSelectionMode, checkAnim]);
+
+    // Animate selection indicator
+    Animated.spring(selectionIndicatorAnim, {
+      toValue: isSelectionMode ? 1 : 0,
+      tension: 100,
+      friction: 8,
+      useNativeDriver: true,
+    }).start();
+  }, [isSelectionMode, checkAnim, selectionIndicatorAnim]);
 
   const handleToggle = () => {
     if (isSelectionMode) {
@@ -111,7 +97,6 @@ const TaskItem = forwardRef<TaskItemRef, TaskItemProps>(({
   };
 
   const handleDelete = () => {
-    // Show confirmation dialog first
     onDelete(task.id);
   };
 
@@ -130,6 +115,19 @@ const TaskItem = forwardRef<TaskItemRef, TaskItemProps>(({
         },
       ]}
     >
+      {/* Selection Mode Indicator */}
+      {isSelectionMode && (
+        <Animated.View
+          style={[
+            styles.selectionModeIndicator,
+            {
+              opacity: selectionIndicatorAnim,
+              transform: [{ scale: selectionIndicatorAnim }],
+            },
+          ]}
+        />
+      )}
+
       {/* Selection Checkbox or Task Toggle */}
       <Pressable
         style={styles.toggleButton}
@@ -212,9 +210,7 @@ const TaskItem = forwardRef<TaskItemRef, TaskItemProps>(({
       </TouchableOpacity>
     </Animated.View>
   );
-});
-
-TaskItem.displayName = 'TaskItem';
+};
 
 export default TaskItem;
 
@@ -236,6 +232,18 @@ const styles = StyleSheet.create({
     elevation: 3,
     borderWidth: 1,
     borderColor: '#f1f5f9',
+    position: 'relative',
+  },
+  selectionModeIndicator: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(139, 92, 246, 0.05)',
+    borderRadius: 16,
+    borderWidth: 2,
+    borderColor: 'rgba(139, 92, 246, 0.2)',
   },
   toggleButton: {
     marginRight: 16,

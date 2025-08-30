@@ -1,10 +1,10 @@
 import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect, useRef } from 'react';
 import {
-    Animated,
-    StyleSheet,
-    Text,
-    View,
+  Animated,
+  StyleSheet,
+  Text,
+  View,
 } from 'react-native';
 
 export type ToastType = 'success' | 'completion' | 'deletion';
@@ -14,7 +14,6 @@ interface ToastProps {
   message: string;
   type: ToastType;
   onHide: () => void;
-  duration?: number;
 }
 
 /**
@@ -26,7 +25,6 @@ export default function Toast({
   message,
   type,
   onHide,
-  duration = 3000,
 }: ToastProps) {
   const slideAnim = useRef(new Animated.Value(-100)).current;
   const opacityAnim = useRef(new Animated.Value(0)).current;
@@ -47,34 +45,25 @@ export default function Toast({
           useNativeDriver: true,
         }),
       ]).start();
-
-      // Auto hide after duration
-      const timer = setTimeout(() => {
-        hideToast();
-      }, duration);
-
-      return () => clearTimeout(timer);
+    } else {
+      // Slide out to top
+      Animated.parallel([
+        Animated.spring(slideAnim, {
+          toValue: -100,
+          tension: 100,
+          friction: 8,
+          useNativeDriver: true,
+        }),
+        Animated.timing(opacityAnim, {
+          toValue: 0,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+      ]).start(() => {
+        onHide();
+      });
     }
-  }, [visible, slideAnim, opacityAnim, duration]);
-
-  const hideToast = () => {
-    // Slide out to top
-    Animated.parallel([
-      Animated.spring(slideAnim, {
-        toValue: -100,
-        tension: 100,
-        friction: 8,
-        useNativeDriver: true,
-      }),
-      Animated.timing(opacityAnim, {
-        toValue: 0,
-        duration: 200,
-        useNativeDriver: true,
-      }),
-    ]).start(() => {
-      onHide();
-    });
-  };
+  }, [visible, slideAnim, opacityAnim, onHide]);
 
   const getToastStyle = () => {
     switch (type) {

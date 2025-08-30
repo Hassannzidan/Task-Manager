@@ -2,11 +2,11 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { useEffect, useRef } from 'react';
 import {
-    Animated,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Animated,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 
 interface BulkActionBarProps {
@@ -77,17 +77,26 @@ export default function BulkActionBar({
         },
       ]}
     >
+      {/* Background with gradient */}
+      <LinearGradient
+        colors={['rgba(255, 255, 255, 0.95)', 'rgba(255, 255, 255, 0.98)']}
+        style={styles.background}
+      />
+      
       {/* Selection Info */}
       <View style={styles.selectionInfo}>
-        <Text style={styles.selectionText}>
-          {selectedCount} task{selectedCount !== 1 ? 's' : ''} selected
-        </Text>
+        <View style={styles.selectionBadge}>
+          <Ionicons name="checkmark-circle" size={20} color="#8b5cf6" />
+          <Text style={styles.selectionText}>
+            {selectedCount} task{selectedCount !== 1 ? 's' : ''} selected
+          </Text>
+        </View>
         <TouchableOpacity
           style={styles.clearButton}
           onPress={onClearSelection}
           activeOpacity={0.7}
         >
-          <Ionicons name="close" size={20} color="#64748b" />
+          <Ionicons name="close-circle" size={24} color="#64748b" />
         </TouchableOpacity>
       </View>
 
@@ -137,7 +146,6 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: '#ffffff',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     paddingHorizontal: 24,
@@ -146,17 +154,36 @@ const styles = StyleSheet.create({
     shadowColor: '#000000',
     shadowOffset: {
       width: 0,
-      height: -4,
+      height: -8,
     },
-    shadowOpacity: 0.1,
-    shadowRadius: 12,
-    elevation: 8,
+    shadowOpacity: 0.15,
+    shadowRadius: 20,
+    elevation: 12,
+    overflow: 'hidden',
+  },
+  background: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
   },
   selectionInfo: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 20,
+  },
+  selectionBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(139, 92, 246, 0.1)',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    gap: 8,
   },
   selectionText: {
     fontSize: 16,
@@ -165,6 +192,8 @@ const styles = StyleSheet.create({
   },
   clearButton: {
     padding: 8,
+    backgroundColor: 'rgba(100, 116, 139, 0.1)',
+    borderRadius: 20,
   },
   actionButtons: {
     flexDirection: 'row',
@@ -172,22 +201,22 @@ const styles = StyleSheet.create({
   },
   actionButton: {
     flex: 1,
-    borderRadius: 12,
+    borderRadius: 16,
     overflow: 'hidden',
     shadowColor: '#000000',
     shadowOffset: {
       width: 0,
-      height: 2,
+      height: 4,
     },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 6,
   },
   gradient: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 16,
+    paddingVertical: 18,
     gap: 8,
   },
   actionButtonText: {

@@ -6,7 +6,7 @@ import {
   Platform,
   StyleSheet,
   Text,
-  View
+  View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -14,47 +14,38 @@ import AddTaskModal from '../components/AddTaskModal';
 import BulkActionBar from '../components/BulkActionBar';
 import ConfirmationDialog from '../components/ConfirmationDialog';
 import FloatingActionButton from '../components/FloatingActionButton';
-import TaskItem, { TaskItemRef } from '../components/TaskItem';
-import Toast, { ToastType } from '../components/Toast';
-import { Task } from '../types/Task';
+import TaskItem from '../components/TaskItem';
+import Toast from '../components/Toast';
+import { useConfirmation, useTasks, useToast } from '../hooks';
 import soundManager from '../utils/soundUtils';
 
 export default function TaskManagerScreen() {
-  // State management
-  const [tasks, setTasks] = useState<Task[]>([]);
+  // Custom hooks
+  const {
+    tasks,
+    isSelectionMode,
+    selectedTasks,
+    completedTasks,
+    incompleteTasks,
+    completedTasksCount,
+    totalTasksCount,
+    addTask,
+    toggleTask,
+    deleteTask,
+    handleTaskSelection,
+    clearSelection,
+    markAllSelectedCompleted,
+    deleteAllSelected,
+  } = useTasks();
+
+  const { toast, showToast, hideToast } = useToast(2500);
+  const { confirmationState, showDeleteConfirmation, showBulkDeleteConfirmation, hideConfirmation } = useConfirmation();
+
+  // Modal state
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [isSelectionMode, setIsSelectionMode] = useState(false);
-  const [selectedTasks, setSelectedTasks] = useState<Set<string>>(new Set());
   
-  // Toast state
-  const [toast, setToast] = useState<{
-    visible: boolean;
-    message: string;
-    type: ToastType;
-  }>({
-    visible: false,
-    message: '',
-    type: 'success',
-  });
-
-  // Confirmation dialog state
-  const [confirmationDialog, setConfirmationDialog] = useState<{
-    visible: boolean;
-    title: string;
-    message: string;
-    onConfirm: () => void;
-  }>({
-    visible: false,
-    title: '',
-    message: '',
-    onConfirm: () => {},
-  });
-
   // Animation refs
   const fadeAnim = useRef(new Animated.Value(0)).current;
-  
-  // Task item refs for animation control
-  const taskItemRefs = useRef<Map<string, TaskItemRef>>(new Map()).current;
 
   // Initialize sound manager and animations
   useEffect(() => {
@@ -72,208 +63,54 @@ export default function TaskManagerScreen() {
     };
   }, [fadeAnim]);
 
-  // Computed values
-  const completedTasks = tasks.filter(task => task.completed);
-  const incompleteTasks = tasks.filter(task => !task.completed);
-  const completedTasksCount = completedTasks.length;
-  const totalTasksCount = tasks.length;
-
-  /**
-   * Show toast notification with auto-hide
-   */
-  const showToast = (message: string, type: ToastType) => {
-    setToast({ visible: true, message, type });
-  };
-
-  /**
-   * Hide toast notification
-   */
-  const hideToast = () => {
-    setToast(prev => ({ ...prev, visible: false }));
-  };
-
-  /**
-   * Show confirmation dialog
-   */
-  const showConfirmation = (title: string, message: string, onConfirm: () => void) => {
-    setConfirmationDialog({ visible: true, title, message, onConfirm });
-  };
-
-  /**
-   * Hide confirmation dialog
-   */
-  const hideConfirmation = () => {
-    setConfirmationDialog(prev => ({ ...prev, visible: false }));
-  };
-
-  /**
-   * Add new task with title and description
-   */
-  const addTask = (title: string, description: string) => {
-    const newTask: Task = {
-      id: Date.now().toString(),
-      text: title,
-      description,
-      completed: false,
-      selected: false,
-    };
-    
-    setTasks(prevTasks => [newTask, ...prevTasks]);
+  // Enhanced task handlers with toast notifications
+  const handleAddTask = (title: string, description: string) => {
+    addTask(title, description);
     showToast('Task added successfully 🚀', 'success');
   };
 
-  /**
-   * Toggle task completion status
-   */
-  const toggleTask = async (taskId: string) => {
-    setTasks(prevTasks =>
-      prevTasks.map(task =>
-        task.id === taskId
-          ? { ...task, completed: !task.completed }
-          : task
-      )
-    );
-
-    // Play sound and show toast for completion
+  const handleToggleTask = async (taskId: string) => {
     const task = tasks.find(t => t.id === taskId);
     if (task && !task.completed) {
-      await soundManager.playSuccessSound();
+      await toggleTask(taskId);
       showToast('Well done! Task completed 🎉', 'completion');
+    } else {
+      toggleTask(taskId);
     }
   };
 
-  /**
-   * Delete a single task
-   */
-  const deleteTask = (taskId: string) => {
-    setTasks(prevTasks => prevTasks.filter(task => task.id !== taskId));
+  const handleDeleteTask = (taskId: string) => {
+    deleteTask(taskId);
     showToast('Task removed 🗑️', 'deletion');
   };
 
-  /**
-   * Handle task selection for bulk operations
-   */
-  const handleTaskSelection = (taskId: string) => {
-    if (!isSelectionMode) {
-      setIsSelectionMode(true);
-    }
-
-    setSelectedTasks(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(taskId)) {
-        newSet.delete(taskId);
-      } else {
-        newSet.add(taskId);
-      }
-      
-      // Exit selection mode if no tasks selected
-      if (newSet.size === 0) {
-        setIsSelectionMode(false);
-      }
-      
-      return newSet;
-    });
-
-    // Update task selection state
-    setTasks(prevTasks =>
-      prevTasks.map(task =>
-        task.id === taskId
-          ? { ...task, selected: !task.selected }
-          : task
-      )
-    );
-  };
-
-  /**
-   * Clear all selections and exit selection mode
-   */
-  const clearSelection = () => {
-    setSelectedTasks(new Set());
-    setIsSelectionMode(false);
-    setTasks(prevTasks =>
-      prevTasks.map(task => ({ ...task, selected: false }))
-    );
-  };
-
-  /**
-   * Mark all selected tasks as completed
-   */
-  const markAllSelectedCompleted = async () => {
+  const handleMarkAllSelectedCompleted = async () => {
     const selectedTaskIds = Array.from(selectedTasks);
-    
-    setTasks(prevTasks =>
-      prevTasks.map(task =>
-        selectedTaskIds.includes(task.id)
-          ? { ...task, completed: true, selected: false }
-          : task
-      )
-    );
-
-    // Play sound and show toast
-    await soundManager.playSuccessSound();
+    await markAllSelectedCompleted();
     showToast(`Marked ${selectedTaskIds.length} task${selectedTaskIds.length !== 1 ? 's' : ''} as completed 🎉`, 'completion');
-    
-    clearSelection();
   };
 
-  /**
-   * Delete all selected tasks
-   */
-  const deleteAllSelected = () => {
+  const handleDeleteAllSelected = () => {
     const selectedTaskIds = Array.from(selectedTasks);
-    
-    setTasks(prevTasks =>
-      prevTasks.filter(task => !selectedTaskIds.includes(task.id))
-    );
-
+    deleteAllSelected();
     showToast(`Removed ${selectedTaskIds.length} task${selectedTaskIds.length !== 1 ? 's' : ''} 🗑️`, 'deletion');
-    clearSelection();
   };
 
-  /**
-   * Show delete confirmation for single task
-   */
-  const showDeleteConfirmation = (taskId: string) => {
-    showConfirmation(
-      'Delete Task',
-      'Are you sure you want to remove this task?',
-      () => {
-        // Trigger the delete animation in the TaskItem
-        const taskItemRef = taskItemRefs.get(taskId);
-        if (taskItemRef) {
-          taskItemRef.animateDelete();
-        } else {
-          // Fallback: delete immediately if ref not found
-          deleteTask(taskId);
-        }
-      }
-    );
+  // Confirmation handlers
+  const handleConfirmDelete = () => {
+    if (confirmationState.mode === 'delete-single' && confirmationState.targetTaskId) {
+      handleDeleteTask(confirmationState.targetTaskId);
+    } else if (confirmationState.mode === 'delete-bulk') {
+      handleDeleteAllSelected();
+    }
+    hideConfirmation();
   };
 
-  /**
-   * Show delete confirmation for multiple tasks
-   */
-  const showBulkDeleteConfirmation = () => {
-    const count = selectedTasks.size;
-    showConfirmation(
-      'Delete Multiple Tasks',
-      `Are you sure you want to remove ${count} task${count !== 1 ? 's' : ''}?`,
-      deleteAllSelected
-    );
-  };
-
-  /**
-   * Render task item with proper props
-   */
-  const renderTaskItem = ({ item, index }: { item: Task; index: number }) => (
+  // Render task item with proper props
+  const renderTaskItem = ({ item, index }: { item: any; index: number }) => (
     <TaskItem
-      ref={(ref) => {
-        if (ref) {
-          taskItemRefs.set(item.id, ref);
-        }
-      }}
       task={item}
-      onToggle={toggleTask}
+      onToggle={handleToggleTask}
       onDelete={showDeleteConfirmation}
       onSelect={handleTaskSelection}
       index={index}
@@ -310,6 +147,11 @@ export default function TaskManagerScreen() {
                 showsVerticalScrollIndicator={false}
                 contentContainerStyle={styles.taskList}
                 ItemSeparatorComponent={() => <View style={styles.separator} />}
+                scrollEventThrottle={16}
+                keyboardShouldPersistTaps="handled"
+                removeClippedSubviews={true}
+                maxToRenderPerBatch={10}
+                windowSize={10}
               />
             </View>
           )}
@@ -325,6 +167,11 @@ export default function TaskManagerScreen() {
                 showsVerticalScrollIndicator={false}
                 contentContainerStyle={styles.taskList}
                 ItemSeparatorComponent={() => <View style={styles.separator} />}
+                scrollEventThrottle={16}
+                keyboardShouldPersistTaps="handled"
+                removeClippedSubviews={true}
+                maxToRenderPerBatch={10}
+                windowSize={10}
               />
             </View>
           )}
@@ -349,7 +196,7 @@ export default function TaskManagerScreen() {
         <AddTaskModal
           visible={isModalVisible}
           onClose={() => setIsModalVisible(false)}
-          onAddTask={addTask}
+          onAddTask={handleAddTask}
         />
 
         {/* Toast Notifications */}
@@ -362,13 +209,10 @@ export default function TaskManagerScreen() {
 
         {/* Confirmation Dialog */}
         <ConfirmationDialog
-          visible={confirmationDialog.visible}
-          title={confirmationDialog.title}
-          message={confirmationDialog.message}
-          onConfirm={() => {
-            hideConfirmation();
-            confirmationDialog.onConfirm();
-          }}
+          visible={confirmationState.visible}
+          title={confirmationState.title}
+          message={confirmationState.message}
+          onConfirm={handleConfirmDelete}
           onCancel={hideConfirmation}
           type="delete"
         />
@@ -377,8 +221,8 @@ export default function TaskManagerScreen() {
         <BulkActionBar
           visible={isSelectionMode}
           selectedCount={selectedTasks.size}
-          onDeleteAll={showBulkDeleteConfirmation}
-          onMarkAllCompleted={markAllSelectedCompleted}
+          onDeleteAll={() => showBulkDeleteConfirmation(selectedTasks.size)}
+          onMarkAllCompleted={handleMarkAllSelectedCompleted}
           onClearSelection={clearSelection}
         />
       </KeyboardAvoidingView>
